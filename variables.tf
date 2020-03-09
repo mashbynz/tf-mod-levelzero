@@ -1,48 +1,82 @@
-variable "fw_vnet_enabled" {}
 variable "fw_rg_enabled" {}
-variable "la_rg_enabled" {}
-variable "level1_network_location" {}
-variable "level1_network_resource_group_name" {}
+# variable "la_rg_enabled" {}
 
-variable "fw_vnet_config" {
+variable "fw_rg_config" {
   type = object({
-    location     = map(string)
-    vnet_enabled = bool
-    address_space = object({
-      ae  = list(string)
-      ase = list(string)
-    })
-    vnet_name     = map(string)
-    subnet_name   = map(string)
-    subnet_prefix = map(string)
-    dns_servers = object({
-      ae  = list(string)
-      ase = list(string)
-    })
+    location   = map(string)
+    rg_enabled = bool
+    rg_name    = map(string)
     tags = object({
-      ae  = map(string)
-      ase = map(string)
+      region1 = map(string)
+      region2 = map(string)
     })
   })
 
   default = {
-    location     = {}
-    vnet_enabled = true
-    address_space = {
-      ae  = []
-      ase = []
+    location   = {}
+    rg_enabled = true
+    rg_name    = {}
+    tags = {
+      region1 = {}
+      region2 = {}
     }
-    vnet_name     = {}
-    subnet_name   = {}
-    subnet_prefix = {}
+  }
+  description = "Resource Group configuration"
+}
+
+variable "fw_vnet_config" {
+  type = object({
+    vnet_name = map(string)
+    address_space = object({
+      region1 = list(string)
+      region2 = list(string)
+    })
+    base_cidr_block = map(string)
+    dns_servers = object({
+      region1 = list(string)
+      region2 = list(string)
+    })
+    tags = object({
+      region1 = map(string)
+      region2 = map(string)
+    })
+  })
+
+  default = {
+    vnet_name = {}
+    address_space = {
+      region1 = []
+      region2 = []
+    }
+    base_cidr_block = {}
     dns_servers = {
-      ae  = []
-      ase = []
+      region1 = []
+      region2 = []
     }
     tags = {
-      ae  = {}
-      ase = {}
+      region1 = {}
+      region2 = {}
     }
   }
   description = "Firewall VNET configuration"
+}
+
+variable "fw_subnets" {
+  default = [
+    {
+      name    = ""
+      newbits = 4
+      number  = 1
+    },
+    {
+      name    = ""
+      newbits = 4
+      number  = 2
+    },
+    {
+      name    = ""
+      newbits = 4
+      number  = 3
+    },
+  ]
 }

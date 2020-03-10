@@ -251,6 +251,8 @@ resource "azurerm_network_security_group" "rvdb-sc-dl" {
   }
 }
 
+# Associations
+
 ## Route Tables
 
 

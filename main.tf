@@ -72,9 +72,7 @@ resource "azurerm_virtual_network_gateway" "gateway" {
     private_ip_address_allocation = element(values(var.vnetgw_config.gw_ip_configuration_private_ip_allocation_method), count.index)
     subnet_id                     = azurerm_subnet.gateway.*.id[count.index]
   }
-
 }
-
 
 ## Zscaler
 
@@ -252,6 +250,7 @@ resource "azurerm_network_security_group" "rvdb-sc-dl" {
 }
 
 # Associations
+
 
 ## Route Tables
 

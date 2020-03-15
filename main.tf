@@ -1,3 +1,15 @@
+# Resource Groups
+resource "azurerm_resource_group" "rg" {
+  for_each = var.resource_groups
+
+  name     = "${each.value.name}${var.rg_suffix}"
+  location = each.value.location
+  tags = lookup(each.value, "tags", null) == null ? local.tags : merge(local.tags, each.value.tags)
+}
+
+
+
+/*
 ## Hub VNet/Firewall
 # Network Resource Group
 resource "azurerm_resource_group" "firewall" {
@@ -285,3 +297,4 @@ resource "azurerm_network_security_group" "rvdb-sc-dl" {
 #   location = element(values(var.la_rg_config.location), count.index)
 #   tags     = element(values(var.la_rg_config.tags), count.index)
 # }
+*/

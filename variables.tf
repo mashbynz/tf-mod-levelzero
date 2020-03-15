@@ -1,3 +1,37 @@
+variable "resource_groups" {
+  description = "(Required) Map of the resource groups to create"
+}
+
+# Example of resource_groups data structure:
+# resource_groups = {
+#   apim          = { 
+#                   name     = "-apim-demo"
+#                   location = "southeastasia" 
+#                   },
+#   networking    = {    
+#                   name     = "-networking-demo"
+#                   location = "southeastasia" 
+#                   },
+#   insights      = { 
+#                   name     = "-insights-demo"
+#                   location = "southeastasia" 
+#                     tags = {
+#                       project = "Pattaya"
+#                       approver = "Gunter"
+#                     }
+#                   },
+# }
+
+variable "rg_suffix" {
+  description = "(Optional) You can use a suffix to add to the list of resource groups you want to create"
+}
+
+variable "tags" {
+  default     = ""
+  description = "(Required) tags for the deployment"
+}
+
+/*
 variable "fw_rg_enabled" {}
 # variable "la_rg_enabled" {}
 
@@ -210,3 +244,4 @@ variable "rvdb-sc-dl_rules" {
     },
   ]
 }
+*/

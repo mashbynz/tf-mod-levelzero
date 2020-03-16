@@ -1,11 +1,94 @@
-# Resource Groups
+## Resource Groups
 resource "azurerm_resource_group" "rg" {
   for_each = var.resource_groups
 
   name     = "${each.value.name}${var.rg_suffix}"
   location = each.value.location
-  tags = lookup(each.value, "tags", null) == null ? local.tags : merge(local.tags, each.value.tags)
+  tags     = lookup(each.value, "tags", null) == null ? local.tags : merge(local.tags, each.value.tags)
+  # rg_tags??
 }
+
+## Networks
+# VNet
+resource "azurerm_virtual_network" "vnet" {
+  for_each = var.networking_object.vnet
+
+  name                = "${each.value.name}${var.vnet_suffix}"
+  location            = each.value.location
+  resource_group_name = each.value.virtual_network_rg
+  address_space       = each.value.address_space
+
+  # dns_servers = lookup(var.networking_object.vnet, "dns", null)
+  dns_servers = each.value.dns
+
+  dynamic "ddos_protection_plan" {
+    for_each = each.value.enable_ddos_std == true ? [1] : []
+
+    content {
+      id     = each.value.ddos_id
+      enable = each.value.enable_ddos_std
+    }
+  }
+}
+
+# Subnets
+# resource "azurerm_subnet" "v_subnet" {
+#   # lifecycle {
+#   #       ignore_changes = [network_security_group_id]
+#   #   }
+
+#   for_each                = var.subnets
+
+#   name                    = each.value.name
+#   resource_group_name     = var.resource_group
+#   virtual_network_name    = var.virtual_network_name
+#   address_prefix          = each.value.cidr
+#   service_endpoints       = lookup(each.value, "service_endpoints", [])
+#   enforce_private_link_endpoint_network_policies = lookup(each.value, "enforce_private_link_endpoint_network_policies", null )
+#   enforce_private_link_service_network_policies = lookup(each.value, "enforce_private_link_service_network_policies", null)
+
+#   dynamic "delegation" {
+#     for_each = lookup(each.value, "delegation", {}) != {} ? [1] : []
+
+#     content {
+#      name = lookup(each.value.delegation, "name", null)
+
+#      service_delegation {
+#        name = lookup(each.value.delegation.service_delegation, "name", null)
+#        actions = lookup(each.value.delegation.service_delegation, "actions", null)
+#      }
+#     }
+#   }
+
+# }
+
+
+
+# Traffic Analytics
+
+
+
+
+# NSGs
+
+
+
+
+# NSG Association
+
+
+
+
+
+## Diagnostics
+
+
+
+
+## Log Analytics
+
+
+
 
 
 

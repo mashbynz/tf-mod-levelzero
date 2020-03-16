@@ -45,3 +45,10 @@ output "nsgs" {
 
   value = azurerm_network_security_group.nsg_obj
 }
+
+output "route_table_obj" {
+  description = "Returns the full set of Route Tables created"
+  depends_on  = [azurerm_route_table.route_table]
+
+  value = azurerm_route_table.route_table
+}

@@ -71,10 +71,10 @@ resource "azurerm_subnet" "v_subnet" {
 
   for_each = var.networking_object.subnets
 
-  name                 = each.value.name
-  resource_group_name  = each.value.virtual_network_rg
-  virtual_network_name = each.value.virtual_network_name
-  address_prefix       = each.value.cidr
+  name                                           = each.value.name
+  resource_group_name                            = each.value.virtual_network_rg
+  virtual_network_name                           = each.value.virtual_network_name
+  address_prefix                                 = each.value.cidr
   service_endpoints                              = lookup(each.value, "service_endpoints", [])
   enforce_private_link_endpoint_network_policies = lookup(each.value, "enforce_private_link_endpoint_network_policies", null)
   enforce_private_link_service_network_policies  = lookup(each.value, "enforce_private_link_service_network_policies", null)
@@ -132,8 +132,30 @@ resource "azurerm_network_security_group" "nsg_obj" {
 }
 
 # Route Table
+resource "azurerm_route_table" "route_table" {
+  # for_each = var.route_tables
+  for_each = var.networking_object.subnets
 
+  name                          = "${each.value.rt_name}${var.rt_suffix}"
+  location                      = each.value.location
+  resource_group_name           = each.value.virtual_network_rg
+  tags                          = lookup(each.value, "tags", null) == null ? local.tags : merge(local.tags, each.value.tags)
+  disable_bgp_route_propagation = lookup(each.value, "disable_bgp_route_propagation", null)
 
+  dynamic "route" {
+    for_each = lookup(each.value, "route_entries", [])
+    content {
+      name                   = route.value[0]
+      address_prefix         = route.value[1]
+      next_hop_type          = route.value[2]
+      next_hop_in_ip_address = route.value[2] == "VirtualAppliance" ? route.value[3] : null
+    }
+  }
+
+  depends_on = [
+    azurerm_subnet.v_subnet
+  ]
+}
 
 ## Diagnostics
 

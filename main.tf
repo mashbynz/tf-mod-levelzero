@@ -66,7 +66,7 @@ resource "azurerm_subnet" "v_subnet" {
   # This nonsense is required because at the moment you are required to specify the NSG id in both
   # the subnet definition and the NSG association resource (Level1)
   lifecycle {
-    ignore_changes = [network_security_group_id]
+    ignore_changes = [network_security_group_id, route_table_id]
   }
 
   for_each = var.networking_object.subnets
@@ -133,7 +133,6 @@ resource "azurerm_network_security_group" "nsg_obj" {
 
 # Route Table
 resource "azurerm_route_table" "route_table" {
-  # for_each = var.route_tables
   for_each = var.networking_object.subnets
 
   name                          = "${each.value.rt_name}${var.rt_suffix}"
@@ -158,9 +157,41 @@ resource "azurerm_route_table" "route_table" {
 }
 
 ## Diagnostics
+# Traffic Analytics
+# resource "azurerm_network_watcher" "netwatcher" {
+#   count = local.checkifcreateconfig && local.checkifconfigpresent ? 1 : 0
 
+#   name                = var.nw_config.name
+#   location            = var.location
+#   resource_group_name = var.rg
+#   tags                = var.tags
+# }
 
+# resource "azurerm_network_watcher_flow_log" "nw_flow" {
 
+#   for_each = local.nsg
+
+#   # if we havent created the azurerm_network_watcher.netwatcher
+#   # then we take the value given (optional)
+#   network_watcher_name = local.checkifcreateconfig ? azurerm_network_watcher.netwatcher[0].name : var.netwatcher.name
+#   resource_group_name  = local.checkifcreateconfig ? var.rg : var.netwatcher.rg
+
+#   network_security_group_id = each.value.id
+#   storage_account_id        = var.diagnostics_map.diags_sa
+#   enabled                   = lookup(var.nw_config, "flow_logs_settings", {}) != {} ? var.nw_config.flow_logs_settings.enabled : false
+
+#   retention_policy {
+#     enabled = lookup(var.nw_config, "flow_logs_settings", {}) != {} ? var.nw_config.flow_logs_settings.retention : false
+#     days    = lookup(var.nw_config, "flow_logs_settings", {}) != {} ? var.nw_config.flow_logs_settings.period : 7
+#   }
+
+#   traffic_analytics {
+#     enabled               = lookup(var.nw_config, "traffic_analytics_settings", {}) != {} ? var.nw_config.traffic_analytics_settings.enabled : false
+#     workspace_id          = var.log_analytics_workspace.object.workspace_id
+#     workspace_region      = var.log_analytics_workspace.object.location
+#     workspace_resource_id = var.log_analytics_workspace.object.id
+#   }
+# }
 
 ## Log Analytics
 
@@ -172,12 +203,6 @@ resource "azurerm_route_table" "route_table" {
 /*
 ## Hub VNet/Firewall
 # Network Resource Group
-resource "azurerm_resource_group" "firewall" {
-  count    = var.fw_rg_enabled == true ? length(keys(var.fw_rg_config.location)) : 0
-  name     = element(values(var.fw_rg_config.rg_name), count.index)
-  location = element(values(var.fw_rg_config.location), count.index)
-  tags     = element(values(var.fw_rg_config.tags), count.index)
-}
 
 # Hub VNet
 resource "azurerm_virtual_network" "region1_firewall" {

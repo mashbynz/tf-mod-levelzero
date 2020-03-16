@@ -62,6 +62,10 @@ variable "networking_object" {
   description = "(Required) configuration object describing the networking configuration, as described in README"
 }
 
+# variable "subnets" {
+#   description = "Map structure for the subnets to be created"
+# }
+
 # variable "convention" {
 #   description = "(Required) Naming convention method to use"  
 # }

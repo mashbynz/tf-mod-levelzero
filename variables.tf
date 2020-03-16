@@ -62,6 +62,11 @@ variable "networking_object" {
   description = "(Required) configuration object describing the networking configuration, as described in README"
 }
 
+variable "nsg_suffix" {
+  description = "(Optional) You can use a suffix to add to the Network Security Groups you want to create"
+  type        = string
+}
+
 # variable "subnets" {
 #   description = "Map structure for the subnets to be created"
 # }

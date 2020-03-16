@@ -31,13 +31,9 @@ resource "azurerm_virtual_network" "vnet" {
   }
 }
 
-# Subnets
-resource "azurerm_subnet" "v_subnet" {
-  # lifecycle {
-  #       ignore_changes = [network_security_group_id]
-  #   }
-
-  for_each = var.networking_object.subnets
+# Special Subnets
+resource "azurerm_subnet" "s_subnet" {
+  for_each = var.networking_object.specialsubnets
 
   name                                           = each.value.name
   resource_group_name                            = each.value.virtual_network_rg
@@ -65,7 +61,41 @@ resource "azurerm_subnet" "v_subnet" {
   ]
 }
 
+# Other Subnets
+resource "azurerm_subnet" "v_subnet" {
+  # This nonsense is required because at the moment you are required to specify the NSG id in both
+  # the subnet definition and the NSG association resource (Level1)
+  lifecycle {
+    ignore_changes = [network_security_group_id]
+  }
 
+  for_each = var.networking_object.subnets
+
+  name                 = each.value.name
+  resource_group_name  = each.value.virtual_network_rg
+  virtual_network_name = each.value.virtual_network_name
+  address_prefix       = each.value.cidr
+  service_endpoints                              = lookup(each.value, "service_endpoints", [])
+  enforce_private_link_endpoint_network_policies = lookup(each.value, "enforce_private_link_endpoint_network_policies", null)
+  enforce_private_link_service_network_policies  = lookup(each.value, "enforce_private_link_service_network_policies", null)
+
+  dynamic "delegation" {
+    for_each = lookup(each.value, "delegation", {}) != {} ? [1] : []
+
+    content {
+      name = lookup(each.value.delegation, "name", null)
+
+      service_delegation {
+        name    = lookup(each.value.delegation.service_delegation, "name", null)
+        actions = lookup(each.value.delegation.service_delegation, "actions", null)
+      }
+    }
+  }
+
+  depends_on = [
+    azurerm_virtual_network.vnet
+  ]
+}
 
 # Traffic Analytics
 
@@ -73,13 +103,35 @@ resource "azurerm_subnet" "v_subnet" {
 
 
 # NSGs
+resource "azurerm_network_security_group" "nsg_obj" {
+  for_each = var.networking_object.subnets
 
+  name                = "${each.value.name}${var.nsg_suffix}"
+  resource_group_name = each.value.virtual_network_rg
+  location            = each.value.location
+  tags                = lookup(each.value, "tags", null) == null ? local.tags : merge(local.tags, each.value.tags)
 
+  dynamic "security_rule" {
+    for_each = concat(lookup(each.value, "nsg_inbound", []), lookup(each.value, "nsg_outbound", []))
+    content {
+      name                       = security_rule.value[0]
+      priority                   = security_rule.value[1]
+      direction                  = security_rule.value[2]
+      access                     = security_rule.value[3]
+      protocol                   = security_rule.value[4]
+      source_port_range          = security_rule.value[5]
+      destination_port_range     = security_rule.value[6]
+      source_address_prefix      = security_rule.value[7]
+      destination_address_prefix = security_rule.value[8]
+    }
+  }
 
+  depends_on = [
+    azurerm_subnet.v_subnet
+  ]
+}
 
-# NSG Association
-
-
+# Route Table
 
 
 

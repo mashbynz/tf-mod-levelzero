@@ -31,14 +31,6 @@ variable "tags" {
   description = "(Required) tags for the deployment"
 }
 
-# variable "diagnostics_map" {
-#   description = "(Required) contains the SA and EH details for operations diagnostics"
-# }
-
-# variable "diagnostics_settings" {
-#   description = "(Required) configuration object describing the diagnostics"
-# }
-
 variable "networking_object" {
   description = "(Required) configuration object describing the networking configuration, as described in README"
 }
@@ -56,4 +48,12 @@ variable "vnet_suffix" {
 variable "rt_suffix" {
   description = "(Optional) You can use a suffix to add to the list of Route Tables you want to create"
   type        = string
+}
+
+variable "diagnostics_object" {
+  description = "(Required) configuration object describing the Diagnostics configuration"
+}
+
+variable "log_analytics_object" {
+  description = "(Required) Object describing the configuration of the Log Analytics workspace"
 }

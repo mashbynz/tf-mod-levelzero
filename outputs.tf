@@ -1,19 +1,54 @@
-# output "level1_firewall_id" {
-#   value = azurerm_virtual_network.firewall.*.id
-# }
+output "resource_groups" {
+  description = "Returns the full set of resource group objects created"
+  depends_on  = [azurerm_resource_group.rg]
 
-output "network_location" {
-  value = azurerm_resource_group.firewall.*.location
+  value = azurerm_resource_group.rg
 }
 
-output "network_resource_group_name" {
-  value = azurerm_resource_group.firewall.*.name
+output "names" {
+  description = "Returns a map of resource_group key -> resource_group name"
+  depends_on  = [azurerm_resource_group.rg]
+
+  value = {
+    for group in keys(azurerm_resource_group.rg) :
+    group => azurerm_resource_group.rg[group].name
+  }
 }
 
-# output "level0_la_rg_enabled" {
-#   value = var.la_rg_config.rg_enabled
-# }
+output "ids" {
+  description = "Returns a map of resource_group key -> resource_group id"
+  depends_on  = [azurerm_resource_group.rg]
 
-# output "level0_fw_rg_enabled" {
-#   value = var.fw_rg_config.rg_enabled
-# }
+  value = {
+    for group in keys(azurerm_resource_group.rg) :
+    group => azurerm_resource_group.rg[group].id
+  }
+}
+
+output "virtual_networks" {
+  description = "Returns the full set of virtual networks objects created"
+  depends_on  = [azurerm_virtual_network.vnet]
+
+  value = azurerm_virtual_network.vnet
+}
+
+output "subnets" {
+  description = "Returns the full set of subnets created"
+  depends_on  = [azurerm_subnet.v_subnet]
+
+  value = azurerm_subnet.v_subnet
+}
+
+output "nsgs" {
+  description = "Returns the full set of NSGs created"
+  depends_on  = [azurerm_network_security_group.nsg_obj]
+
+  value = azurerm_network_security_group.nsg_obj
+}
+
+output "route_table_obj" {
+  description = "Returns the full set of Route Tables created"
+  depends_on  = [azurerm_route_table.route_table]
+
+  value = azurerm_route_table.route_table
+}

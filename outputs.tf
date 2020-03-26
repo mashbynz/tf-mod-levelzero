@@ -52,3 +52,10 @@ output "route_table_obj" {
 
   value = azurerm_route_table.route_table
 }
+
+output "ip_addresses" {
+  description = "Returns the full set of IP Addresses created"
+  depends_on  = [azurerm_public_ip.ip]
+
+  value = azurerm_public_ip.ip
+}

@@ -28,6 +28,10 @@ resource "azurerm_virtual_network" "vnet" {
       enable = each.value.enable_ddos_std
     }
   }
+
+  depends_on = [
+    azurerm_resource_group.rg
+  ]
 }
 
 # Special Subnets
@@ -64,9 +68,9 @@ resource "azurerm_subnet" "s_subnet" {
 resource "azurerm_subnet" "v_subnet" {
   # This nonsense is required because at the moment you are required to specify the NSG id in both
   # the subnet definition and the NSG association resource (Level1)
-  lifecycle {
-    ignore_changes = [network_security_group_id, route_table_id]
-  }
+  # lifecycle {
+  #   ignore_changes = [network_security_group_id, route_table_id]
+  # }
 
   for_each = var.networking_object.subnets
 
@@ -147,5 +151,23 @@ resource "azurerm_route_table" "route_table" {
 
   depends_on = [
     azurerm_subnet.v_subnet
+  ]
+}
+
+# Public IP
+resource "azurerm_public_ip" "ip" {
+  for_each = var.IP_address_object.public
+
+  name                = "${each.value.name}${var.ip_suffix}"
+  location            = each.value.location
+  resource_group_name = each.value.resource_group_name
+  allocation_method   = each.value.allocation_method
+  sku                 = each.value.sku
+  ip_version          = each.value.ip_version
+
+  tags = lookup(each.value, "tags", null) == null ? local.tags : merge(local.tags, each.value.tags)
+
+  depends_on = [
+    azurerm_resource_group.rg
   ]
 }

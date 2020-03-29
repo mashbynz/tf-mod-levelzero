@@ -18,7 +18,7 @@ resource "azurerm_virtual_network" "vnet" {
   address_space       = each.value.address_space
   tags                = lookup(each.value, "tags", null) == null ? local.tags : merge(local.tags, each.value.tags)
 
-  dns_servers = lookup(each.value, "dns", null)
+  # dns_servers = lookup(each.value, "dns", null)
 
   dynamic "ddos_protection_plan" {
     for_each = lookup(each.value, "enable_ddos_std", false) == true ? [1] : []

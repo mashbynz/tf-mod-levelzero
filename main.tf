@@ -154,6 +154,26 @@ resource "azurerm_route_table" "route_table" {
   ]
 }
 
+resource "azurerm_route_table" "special_route_table" {
+  for_each = var.networking_object.specialroutetables
+
+  name                          = "${each.value.rt_name}${var.rt_suffix}"
+  location                      = each.value.location
+  resource_group_name           = each.value.resource_group_name
+  tags                          = lookup(each.value, "tags", null) == null ? local.tags : merge(local.tags, each.value.tags)
+  disable_bgp_route_propagation = each.value.disable_bgp_route_propagation
+
+  dynamic "route" {
+    for_each = lookup(each.value, "route_entries", [])
+    content {
+      name                   = route.value[0]
+      address_prefix         = route.value[1]
+      next_hop_type          = route.value[2]
+      next_hop_in_ip_address = route.value[2] == "VirtualAppliance" ? route.value[3] : null
+    }
+  }
+}
+
 # Public IP
 resource "azurerm_public_ip" "ip" {
   for_each = var.IP_address_object.public

@@ -1,3 +1,12 @@
 # tf-mod-levelzero
-state file  
-resource groups
+Resource Groups
+
+Networking objects
+  - VNets
+  - subnets
+  - VNet peerings
+  - Network Watcher
+  - Route Tables
+  - NSGs
+  
+ Public IP Addresses

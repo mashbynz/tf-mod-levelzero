@@ -57,3 +57,12 @@ variable "diagnostics_object" {
 variable "log_analytics_object" {
   description = "(Required) Object describing the configuration of the Log Analytics workspace"
 }
+
+variable "IP_address_object" {
+  description = "(Required) configuration object describing the IP Address configuration"
+}
+
+variable "ip_suffix" {
+  description = "(Optional) You can use a suffix to add to the list of IP Addresses you want to create"
+  type        = string
+}

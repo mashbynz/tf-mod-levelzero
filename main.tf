@@ -18,7 +18,7 @@ resource "azurerm_virtual_network" "vnet" {
   address_space       = each.value.address_space
   tags                = lookup(each.value, "tags", null) == null ? local.tags : merge(local.tags, each.value.tags)
 
-  dns_servers = lookup(each.value, "dns", null)
+  # dns_servers = lookup(each.value, "dns", null)
 
   dynamic "ddos_protection_plan" {
     for_each = lookup(each.value, "enable_ddos_std", false) == true ? [1] : []
@@ -28,6 +28,10 @@ resource "azurerm_virtual_network" "vnet" {
       enable = each.value.enable_ddos_std
     }
   }
+
+  depends_on = [
+    azurerm_resource_group.rg
+  ]
 }
 
 # Special Subnets
@@ -64,9 +68,9 @@ resource "azurerm_subnet" "s_subnet" {
 resource "azurerm_subnet" "v_subnet" {
   # This nonsense is required because at the moment you are required to specify the NSG id in both
   # the subnet definition and the NSG association resource (Level1)
-  lifecycle {
-    ignore_changes = [network_security_group_id, route_table_id]
-  }
+  # lifecycle {
+  #   ignore_changes = [network_security_group_id, route_table_id]
+  # }
 
   for_each = var.networking_object.subnets
 
@@ -147,5 +151,43 @@ resource "azurerm_route_table" "route_table" {
 
   depends_on = [
     azurerm_subnet.v_subnet
+  ]
+}
+
+resource "azurerm_route_table" "special_route_table" {
+  for_each = var.networking_object.specialroutetables
+
+  name                          = "${each.value.rt_name}${var.rt_suffix}"
+  location                      = each.value.location
+  resource_group_name           = each.value.resource_group_name
+  tags                          = lookup(each.value, "tags", null) == null ? local.tags : merge(local.tags, each.value.tags)
+  disable_bgp_route_propagation = each.value.disable_bgp_route_propagation
+
+  dynamic "route" {
+    for_each = lookup(each.value, "route_entries", [])
+    content {
+      name                   = route.value[0]
+      address_prefix         = route.value[1]
+      next_hop_type          = route.value[2]
+      next_hop_in_ip_address = route.value[2] == "VirtualAppliance" ? route.value[3] : null
+    }
+  }
+}
+
+# Public IP
+resource "azurerm_public_ip" "ip" {
+  for_each = var.IP_address_object.public
+
+  name                = "${each.value.name}${var.ip_suffix}"
+  location            = each.value.location
+  resource_group_name = each.value.resource_group_name
+  allocation_method   = each.value.allocation_method
+  sku                 = each.value.sku
+  ip_version          = each.value.ip_version
+
+  tags = lookup(each.value, "tags", null) == null ? local.tags : merge(local.tags, each.value.tags)
+
+  depends_on = [
+    azurerm_resource_group.rg
   ]
 }
